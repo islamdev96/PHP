@@ -137,18 +137,8 @@ function imageUpload($dir, $imageRequest)
         $imagename  = rand(1000, 10000) . $_FILES[$imageRequest]['name'];
         $imagetmp   = $_FILES[$imageRequest]['tmp_name'];
         $imagesize  = $_FILES[$imageRequest]['size'];
-        $allowExt = array(
-            "jpg", "jpeg", "png", "gif", "bmp", "tiff", "webp", "heif", "heic", "ico",
-            "svg", "ai", "psd", "eps", "raw", "cr2", "nef", "orf", "rw2", "arw", "dng",
-            "srw", "pef", "raf", "srf", "3fr", "k25", "mrw", "mef", "erf", "x3f", "sr2",
-            "nrw", "png", "jpe", "ico", "cur", "tga", "jp2", "jxr", "wdp", "hdp", "dds",
-            "pict", "pxr", "tif", "pdf", "svgz", "wmf", "emf", "art", "cgm", "dxf", "pcx",
-            "dib", "wmz", "jpg2", "j2k", "jpf", "jpm", "jpx", "j2c", "jpc", "jbg", "jbig",
-            "jb2", "epsf", "epsi", "epdf", "mng", "pgm", "ppm", "pbm", "pnm", "rla", "sgi",
-            "exr", "hdr", "icns", "wpg", "dib", "vda", "win", "emz", "wmz", "pgx", "pcc",
-            "wmf", "cmx", "cpt", "psb", "pdd", "pnm", "pam", "pfm", "webp", "heif", "heic"
-        );
-                $strToArray = explode(".", $imagename);
+        $allowExt   = array("jpg", "png", "gif", "mp3", "pdf" , "svg");
+        $strToArray = explode(".", $imagename);
         $ext        = end($strToArray);
         $ext        = strtolower($ext);
 
