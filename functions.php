@@ -10,7 +10,7 @@ define("MB", 1048576);
 
 function filterRequest($requestname)
 {
-    return htmlspecialchars(strip_tags($_POST[$requestname]));
+    return  htmlspecialchars(strip_tags($_POST[$requestname]));
 }
 
 function getAllData($table, $where = null, $values = null, $json = true)
@@ -60,6 +60,9 @@ function getData($table, $where = null, $values = null, $json = true)
     }
 }
 
+
+
+
 function insertData($table, $data, $json = true)
 {
     global $con;
@@ -73,25 +76,18 @@ function insertData($table, $data, $json = true)
     foreach ($data as $f => $v) {
         $stmt->bindValue(':' . $f, $v);
     }
-
-    try {
-        $stmt->execute();
-        $count = $stmt->rowCount();
-        if ($json == true) {
-            if ($count > 0) {
-                echo json_encode(array("status" => "success"));
-            } else {
-                echo json_encode(array("status" => "failure"));
-            }
-        }
-        return $count;
-    } catch (PDOException $e) {
-        if ($json == true) {
+    $stmt->execute();
+    $count = $stmt->rowCount();
+    if ($json == true) {
+        if ($count > 0) {
+            echo json_encode(array("status" => "success"));
+        } else {
             echo json_encode(array("status" => "failure"));
         }
-        return 0;
     }
+    return $count;
 }
+
 
 function updateData($table, $data, $where, $json = true)
 {
@@ -136,39 +132,39 @@ function deleteData($table, $where, $json = true)
 
 function imageUpload($dir, $imageRequest)
 {
+    global $msgError;
     if (isset($_FILES[$imageRequest])) {
-        $imagename = uniqid('img_') . '.' . pathinfo($_FILES[$imageRequest]['name'], PATHINFO_EXTENSION);
-        $imagetmp  = $_FILES[$imageRequest]['tmp_name'];
-        $imagesize = $_FILES[$imageRequest]['size'];
+        $imagename  = rand(1000, 10000) . $_FILES[$imageRequest]['name'];
+        $imagetmp   = $_FILES[$imageRequest]['tmp_name'];
+        $imagesize  = $_FILES[$imageRequest]['size'];
+        $allowExt   = array("jpg", "png", "gif", "mp3", "pdf" , "svg");
+        $strToArray = explode(".", $imagename);
+        $ext        = end($strToArray);
+        $ext        = strtolower($ext);
 
-        // No need for the $allowExt array and extension check
-
-        if ($imagesize > 10 * 1024 * 1024) { // Increased size limit to 10 MB
-            return "size";
+        if (!empty($imagename) && !in_array($ext, $allowExt)) {
+            $msgError = "EXT";
         }
-
-        // No need for the $allowedMimeTypes array and MIME type check
-
-        try {
-            $targetFilePath = $dir . "/" . $imagename;
-            if (move_uploaded_file($imagetmp, $targetFilePath)) {
-                return $imagename;
-            } else {
-                return "fail";
-            }
-        } catch (Exception $e) {
+        if ($imagesize > 2 * MB) {
+            $msgError = "size";
+        }
+        if (empty($msgError)) {
+            move_uploaded_file($imagetmp,  $dir . "/" . $imagename);
+            return $imagename;
+        } else {
             return "fail";
         }
-    } else {
-        return 'empty';
+    }else {
+        return 'empty' ; 
     }
 }
 
+
+
 function deleteFile($dir, $imagename)
 {
-    $filePath = $dir . "/" . $imagename;
-    if (file_exists($filePath)) {
-        unlink($filePath);
+    if (file_exists($dir . "/" . $imagename)) {
+        unlink($dir . "/" . $imagename);
     }
 }
 
@@ -188,14 +184,14 @@ function checkAuthenticate()
     // End 
 }
 
-function printFailure($message = "none")
-{
-    echo json_encode(array("status" => "failure", "message" => $message));
-}
 
-function printSuccess($message = "none")
+function   printFailure($message = "none")
 {
-    echo json_encode(array("status" => "success", "message" => $message));
+    echo     json_encode(array("status" => "failure", "message" => $message));
+}
+function   printSuccess($message = "none")
+{
+    echo     json_encode(array("status" => "success", "message" => $message));
 }
 
 function result($count)
@@ -213,9 +209,14 @@ function sendEmail($to, $title, $body)
     mail($to, $title, $body, $header);
 }
 
+
+
+
+
 function sendGCM($title, $message, $topic, $pageid, $pagename)
 {
-    // Replace 'YOUR_FCM_SERVER_KEY' with your actual FCM server key
+
+
     $url = 'https://fcm.googleapis.com/fcm/send';
 
     $fields = array(
@@ -234,11 +235,13 @@ function sendGCM($title, $message, $topic, $pageid, $pagename)
             "pageid" => $pageid,
             "pagename" => $pagename
         )
+
     );
+
 
     $fields = json_encode($fields);
     $headers = array(
-        'Authorization: key=' . 'YOUR_FCM_SERVER_KEY',
+        'Authorization: key=' . "",
         'Content-Type: application/json'
     );
 
@@ -254,6 +257,8 @@ function sendGCM($title, $message, $topic, $pageid, $pagename)
     curl_close($ch);
 }
 
+
+
 function insertNotify($title, $body, $userid, $topic, $pageid, $pagename)
 {
     global $con;
@@ -263,7 +268,3 @@ function insertNotify($title, $body, $userid, $topic, $pageid, $pagename)
     $count = $stmt->rowCount();
     return $count;
 }
-
-// ... (Remaining functions and helpers)
-
-?>
